@@ -1,0 +1,94 @@
+package models;
+
+public class SensorMatrices {
+
+	private int dim, rows, cols, head;
+	private int numOfReadings;
+	private StateModel stateModel;
+	
+	private double[][] vectors;
+	
+	public SensorMatrices( StateModel stateModel) {
+		
+		this.stateModel = stateModel;
+		int[] help = stateModel.getDimensions();
+		
+		rows = help[0];
+		cols = help[1];
+		
+		head = help[2];
+
+		
+		dim = rows * cols * head;
+		numOfReadings = rows * cols + 1;
+		
+		vectors = new double[numOfReadings][dim];
+	
+		initVectors();
+	}
+	
+	public void initVectors() {
+		
+	        int o, i, x, y, sx, sy;
+		int[] help;
+		
+		for( i=0; i<dim; i++) {
+			vectors[numOfReadings-1][i] = 1.0; //sensor reading "nothing"
+		}
+
+		
+		for( o=0; o<numOfReadings-1; o++) {
+			help = stateModel.sensorStateToXY(o);
+			sx = help[0];
+			sy = help[1];
+			
+			for( i=0; i<dim; i++) {
+				help = stateModel.robotStateToXY(i);
+				x = help[0];
+				y = help[1];
+				
+				if( x == sx && y == sy)
+					vectors[o][i] = 0.1; 
+				else if( ( x == sx+1 || x == sx-1) && y == sy)
+					vectors[o][i] = 0.05; 
+				else if( ( x == sx+1 || x == sx-1) && (y == sy+1 || y == sy-1))
+					vectors[o][i] = 0.05; 
+				else if( x == sx && (y == sy+1 || y == sy-1))
+					vectors[o][i] = 0.05; 
+				else if( ( x == sx+2 || x == sx-2) && (y == sy || y == sy+1 || y == sy-1))
+					vectors[o][i] = 0.025; 
+				else if( ( x == sx+2 || x == sx-2) && (y == sy+2 || y == sy-2))
+					vectors[o][i] = 0.025; 
+				else if( ( x == sx || x == sx+1 || x == sx-1) && (y == sy+2 || y == sy-2))
+					vectors[o][i] = 0.025; 
+				
+//				System.out.println( "testing pos " 
+//					+ o + " = (" +
+//					sx + ", " + sy + ") against state "
+//					+ i + " = (" +
+//					x + ", " + y + ", " + h + "): " + vectors[o][i]);
+			
+				vectors[numOfReadings-1][i] -= vectors[o][i]; //sensor reading "nothing"
+			}
+			
+			
+		}
+
+
+	}
+	
+	public int getNrOfReadings() {
+		return numOfReadings;
+	}
+	
+	public double getOri( int reading, int i) {
+		return vectors[reading][i];
+	}
+	
+	public double getOrXY( int rX, int rY, int x, int y) {
+		if( rX == -1 || rY == -1)
+			return vectors[numOfReadings-1][x*cols*head + y*head];
+		return vectors[rX*cols + rY][x*cols*head + y*head];
+	}
+
+}

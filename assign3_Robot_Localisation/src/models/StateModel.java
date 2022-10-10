@@ -1,0 +1,80 @@
+package models;
+
+/*
+ *  This class provides utilities to convert a robot 
+ *  state <s> into its components (pose given by 
+ *  position <x, y> and heading <h>) and vice versa,
+ *  as well as a sensor reading <o> into its
+ *  components (position given as <x, y>).
+ 
+ *  The calculations are based on the assumption that  
+ *  states are encoded as state = ( x, y, h),  
+ *  with x, y, giving the position coordinates in the grid
+ *  x corresponds to the row, y is the column, and headings 
+ *  correspond to the four cardinal directions, 
+ *  starting "north" and running clockwise:
+ *  
+ *	heading h = 0 -> "north"
+ *	heading h = 1 -> "east"
+ *	 ...
+ *	This means
+ *  state 0 = ( 0, 0, 0)
+ *  state 1 = ( 0, 0, 1)
+ *  state 2 = ( 0, 0, 2)
+ *  state 3 = ( 0, 0, 3)
+ *  state 4 = ( 0, 1, 0)
+ *  
+ */
+
+public class StateModel {
+	int rows, cols, head;
+	
+	public StateModel( int rows, int cols) {
+		this.rows = rows;
+		this.cols = cols;
+		this.head = 4;
+	}
+
+	public int[] robotStateToXYH( int s) {
+		int[] xyh = new int[3];
+		xyh[0] = s / (cols*head);
+		xyh[1] = (s - xyh[0]*cols*head ) / head;
+		xyh[2] = s % head;
+		
+		return xyh;
+	}
+	
+	public int xyhToRobotState( int x, int y, int h) {
+		return x*cols*head + y*head + h;
+	}
+	
+	public int[] robotStateToXY( int s) {
+		int[] xy = new int[2];
+		xy[0] = s / (cols*head);
+		xy[1] = (s - xy[0]*cols*head ) / head;
+		
+		return xy;
+	}
+
+	public int[] sensorStateToXY( int s) {
+		int[] xy = new int[2];
+		xy[0] = s / cols;
+		xy[1] =  s % cols;
+		
+		return xy;
+	}
+
+	
+	public int robotStateToSensorState( int s) {
+		return s / head;
+	}
+	
+	public int[] getDimensions() {
+		int[] dims = new int[3];
+		dims[0] = rows;
+		dims[1] = cols;
+		dims[2] = head;
+		
+		return dims;
+	}
+}	

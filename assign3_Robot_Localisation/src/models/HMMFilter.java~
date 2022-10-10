@@ -1,0 +1,14 @@
+package models;
+
+
+public class HMMFilter {
+	/*
+	 *  ********************* YOUR TASK ******************
+	 *  
+	 *  Implement the forward filtering approach 
+	 *  based on the transition and sensor models
+	 *  
+	 *  after one update cycle, the f-vector (probability distribution
+	 *  over the states) should be updated
+	 */
+}

@@ -1,0 +1,127 @@
+/*
+ * The Localizer controls one step in the localisation process which means to
+ * - update the true position of the agent 
+ * - read out the sensor reading based on the true position and the sensor model
+ * - compute the new probability distribution (f-vector) based on the sensor reading 
+ * and the previous estimate.
+ * 
+ * Note that this part of the hand-out has been adapted from a mere interface to an actual code skeleton, 
+ * artifacts of this somewhat organic transformation might remain.
+ * Do not consider this a programming contest, focus on a correct implementation of the 
+ * robot simulator and the filtering approach.
+ * 
+ * 2021, Elin A. Topp
+ */
+
+
+package models;
+
+import viewer.RobotLocalizationViewer;
+import control.EstimatorInterface;
+
+public class DummyLocalizer implements EstimatorInterface {
+
+	RobotLocalizationViewer viewer;
+	
+	TransitionMatrix tm;
+	SensorMatrices sm;
+	StateModel stateModel;
+
+	// number of rows, columns and headings
+	private int rows, cols, head;
+	
+	// the current true state and the subsequent sensor reading
+	private int trueState, sense;
+	
+	public DummyLocalizer( StateModel stateModel) {
+		this.stateModel = stateModel;
+		int[] help = stateModel.getDimensions();
+		
+		rows = help[0];
+		cols = help[1];
+		
+		head = help[2];
+
+		tm = new TransitionMatrix( stateModel);
+		sm = new SensorMatrices( stateModel);
+		
+		// initialize true state directly, since there is no robot simulator (yet)
+
+		trueState = 0;
+		sense = -1;
+	}	
+	
+	public int getNumRows() {
+		return rows;
+	}
+	
+	public int getNumCols() {
+		return cols;
+	}
+	
+	public int getNumHead() {
+		return head;
+	}
+		
+	public TransitionMatrix getTMatrix() {
+		return tm;
+	}
+
+	public SensorMatrices getObservationMatrices() {
+		return sm;
+	}
+	
+	public int[] getCurrentTrueState() {
+		
+		int[] ret = stateModel.robotStateToXYH( trueState);
+		System.out.println( " true state is " + trueState);
+		return ret;
+
+	}
+
+	public int[] getCurrentReading() {
+		int[] ret = null;
+		System.out.println( " sensed pos is " + sense);
+
+		if( sense != -1 && sense != rows*cols) {
+			ret = stateModel.sensorStateToXY( sense);
+		} 
+		return ret;
+	}
+
+
+	/*
+	 *  Produce dummy distribution and return it
+	 */
+	public double[] getCurrentProbDist() {
+		double[] help = new double[rows*cols*head];
+		return help;
+	}
+	
+	/*
+	 *  Report back to the viewer
+	 *  - fill tS with the three values for the (new) true pose (x, y, h)
+	 *  - fill sP with the two values for the (current) sensor reading (if not "nothing")
+	 *  
+	 *  Return true if sensor reading was not "nothing", else false.
+	 */
+	public boolean update( int[] tS, int[] sP) {
+		
+		boolean ret = false; 
+		int[] help = stateModel.robotStateToXYH( trueState);
+		tS[0] = help[0];
+		tS[1] = help[1];
+		tS[2] = help[2];
+		if( sense != -1) {
+			help = stateModel.sensorStateToXY( sense);
+			sP[0] = help[0];
+			sP[1] = help[1];
+			ret = true;
+		}
+		
+		return ret;		
+		
+	}
+	
+	
+}
